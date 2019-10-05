@@ -31,6 +31,9 @@ public class PlayerMovement : MonoBehaviour
     bool isSlamming;
     bool isDead;
 
+    public enum PlayerState { Moving, Jumping, Falling, GroundPound }
+    public PlayerState state = PlayerState.Moving;
+
     void Start()
     {
         cam = Camera.main;
@@ -47,7 +50,7 @@ public class PlayerMovement : MonoBehaviour
         isJumping = InputManager.GetButton("Jump") && isGrounded && jumpFallTime <= 0f && jumpTime <= 0f;
         verticalAxis = InputManager.GetAxisRaw("Vertical");
         horizontalAxis = InputManager.GetAxisRaw("Horizontal");
-        isSlamming = InputManager.GetButton("Ground_Pound") && !isGrounded;
+        isSlamming = InputManager.GetButton("Ground_Pound") && !isGrounded && isSlammingFinished;
 
         x = (isGrounded) ? verticalAxis : verticalAxis / airControlFactor;
         z = (isGrounded) ? horizontalAxis : horizontalAxis / airControlFactor;
@@ -56,16 +59,30 @@ public class PlayerMovement : MonoBehaviour
         // print(jumpAcceleration);
         direction = cam.transform.TransformVector(new Vector3(z, 0, x));
         speed = direction.magnitude > 0 ? direction.normalized * moveSpeed * acceleration : Vector3.zero;
+        switch (state)
+        {
+            case PlayerState.Moving:
+                print("moving");
+            break;
+            case PlayerState.Jumping:
+                print("jumping");
+            break;
+            case PlayerState.Falling:
+                print("falling");
+            break;
+            case PlayerState.GroundPound:
+                print("groundpounding");
+                speed = Vector3.zero;
+            break;
+        }
 
         if (isSlamming)
         {
             anim.SetTrigger("GroundPound");
-            jumpAcceleration = 0f;
         }
         if (!isSlammingFinished)
         {
-            // isSlammingFinished = anim.IsInTransition(0) && anim.GetNextAnimatorStateInfo(0).IsName("Default");
-            speed = Vector3.zero;
+            
         }
         body.velocity = new Vector3(speed.x, jumpAcceleration, speed.z) * Time.deltaTime;
         transform.forward = Vector3.Lerp(transform.forward, new Vector3(-x, 0, z).normalized, 20f * Time.fixedDeltaTime);
@@ -110,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
                 jumpFallTime += Time.fixedDeltaTime;
             }
         }
-        else if (jumpFallTime > 0f && isSlammingFinished && !isGrounded)
+        else if (jumpFallTime > 0f && !isGrounded)
         {
             jumpAcceleration = jumpHeight * jumpFallCurve.Evaluate(jumpFallTime / timeToJumpFall);
             jumpFallTime += Time.fixedDeltaTime;
