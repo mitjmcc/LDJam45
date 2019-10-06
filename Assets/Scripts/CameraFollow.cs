@@ -14,7 +14,7 @@ public class CameraFollow : MonoBehaviour
     {
         if (!showOff)
             transform.position = Vector3.Lerp(transform.position, FollowObject.position + PlayerBody.velocity * 0.1f + offset, 20f * Time.fixedDeltaTime);
-        if (InputManager.GetButtonUp("ShowOff"))
+        if (Input.GetKeyDown("v"))
         {   
             if (!showOff)
                 ShowOffLantern();
