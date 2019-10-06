@@ -21,15 +21,12 @@ public class PlayerMovement : MonoBehaviour
     Vector3 direction;
     Vector3 speed;
     Camera cam;
-    Animator anim;
 
     float x, y, z, verticalAxis, horizontalAxis, accelTime, slowdownTime;
     float acceleration, jumpAcceleration, jumpTime, jumpFallTime;
     bool isGrounded;
-    bool isTouchingWall;
     bool isJumping;
     bool isSlamming;
-    bool isDead;
 
     public enum PlayerState { Moving, Jumping, Falling, GroundPound }
     public PlayerState state = PlayerState.Moving;
@@ -38,52 +35,22 @@ public class PlayerMovement : MonoBehaviour
     {
         cam = Camera.main;
         body = GetComponent<Rigidbody>();
-        anim = GetComponentInChildren<Animator>();
     }
 
     void FixedUpdate()
     {
-        if (isDead) {
-            return;
-        }
-
-        isJumping = InputManager.GetButton("Jump") && isGrounded && jumpFallTime <= 0f && jumpTime <= 0f;
+        // isJumping = InputManager.GetButton("Jump") && isGrounded && jumpFallTime <= 0f && jumpTime <= 0f;
         verticalAxis = InputManager.GetAxisRaw("Vertical");
         horizontalAxis = InputManager.GetAxisRaw("Horizontal");
-        isSlamming = InputManager.GetButton("Ground_Pound") && !isGrounded && isSlammingFinished;
+        // isSlamming = InputManager.GetButton("Ground_Pound") && !isGrounded && isSlammingFinished;
 
         x = (isGrounded) ? verticalAxis : verticalAxis / airControlFactor;
         z = (isGrounded) ? horizontalAxis : horizontalAxis / airControlFactor;
 
         RampAcceleration();
-        // print(jumpAcceleration);
         direction = cam.transform.TransformVector(new Vector3(z, 0, x));
         speed = direction.magnitude > 0 ? direction.normalized * moveSpeed * acceleration : Vector3.zero;
-        switch (state)
-        {
-            case PlayerState.Moving:
-                print("moving");
-            break;
-            case PlayerState.Jumping:
-                print("jumping");
-            break;
-            case PlayerState.Falling:
-                print("falling");
-            break;
-            case PlayerState.GroundPound:
-                print("groundpounding");
-                speed = Vector3.zero;
-            break;
-        }
 
-        if (isSlamming)
-        {
-            anim.SetTrigger("GroundPound");
-        }
-        if (!isSlammingFinished)
-        {
-            
-        }
         body.velocity = new Vector3(speed.x, jumpAcceleration, speed.z) * Time.deltaTime;
         transform.forward = Vector3.Lerp(transform.forward, new Vector3(-x, 0, z).normalized, 20f * Time.fixedDeltaTime);
     }
@@ -115,40 +82,36 @@ public class PlayerMovement : MonoBehaviour
                 acceleration = 0f;
         }
 
-        if (isJumping || jumpTime > 0f) {
-            if (jumpTime < timeToJumpHeight) {
-                jumpAcceleration = jumpHeight * jumpCurve.Evaluate(jumpTime / timeToJumpHeight);
-                jumpTime += Time.fixedDeltaTime;
-            }
-            else if (jumpTime >= timeToJumpHeight)
-            {
-                jumpTime = 0f;
-                isJumping = false;
-                jumpFallTime += Time.fixedDeltaTime;
-            }
-        }
-        else if (jumpFallTime > 0f && !isGrounded)
-        {
-            jumpAcceleration = jumpHeight * jumpFallCurve.Evaluate(jumpFallTime / timeToJumpFall);
-            jumpFallTime += Time.fixedDeltaTime;
-        }
+        // if (isJumping || jumpTime > 0f) {
+        //     if (jumpTime < timeToJumpHeight) {
+        //         jumpAcceleration = jumpHeight * jumpCurve.Evaluate(jumpTime / timeToJumpHeight);
+        //         jumpTime += Time.fixedDeltaTime;
+        //     }
+        //     else if (jumpTime >= timeToJumpHeight)
+        //     {
+        //         jumpTime = 0f;
+        //         isJumping = false;
+        //         jumpFallTime += Time.fixedDeltaTime;
+        //     }
+        // }
+        // else if (jumpFallTime > 0f && !isGrounded)
+        // {
+        //     jumpAcceleration = jumpHeight * jumpFallCurve.Evaluate(jumpFallTime / timeToJumpFall);
+        //     jumpFallTime += Time.fixedDeltaTime;
+        // }
     }
 
-    void OnCollisionStay(Collision col) {
-        if (col.gameObject.CompareTag("Ground")) {
-            isGrounded = true;
-            jumpAcceleration = 0f;
-            jumpFallTime = 0f;
-        } else {
-            isTouchingWall = true;
-        }
-    }
+    // void OnCollisionStay(Collision col) {
+    //     if (col.gameObject.CompareTag("Ground")) {
+    //         isGrounded = true;
+    //         jumpAcceleration = 0f;
+    //         jumpFallTime = 0f;
+    //     }
+    // }
 
-    void OnCollisionExit(Collision col) {
-        if (col.gameObject.CompareTag("Ground")) {
-            isGrounded = false;
-        } else {
-            isTouchingWall = false;
-        }
-    }
+    // void OnCollisionExit(Collision col) {
+    //     if (col.gameObject.CompareTag("Ground")) {
+    //         isGrounded = false;
+    //     }
+    // }
 }
