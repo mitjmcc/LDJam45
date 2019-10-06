@@ -8,6 +8,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using Luminosity.IO;
 
 public enum Painter_BrushMode{PAINT,DECAL};
 public class TexturePainter : MonoBehaviour {
@@ -29,6 +30,8 @@ public class TexturePainter : MonoBehaviour {
         if (Input.GetKey("space")) {
             DoAction();
         }
+        if (InputManager.GetButton("Reset"))
+            Reset();
         UpdateBrushCursor ();
     }
 
@@ -83,7 +86,7 @@ public class TexturePainter : MonoBehaviour {
         }
     }
     //Sets the base material with a our canvas texture, then removes all our brushes
-    void SaveTexture(){		
+    void SaveTexture(){
         brushCounter=0;
         System.DateTime date = System.DateTime.Now;
         RenderTexture.active = canvasTexture;
@@ -101,5 +104,14 @@ public class TexturePainter : MonoBehaviour {
     //Show again the user cursor (To avoid saving it to the texture)
     void ShowCursor(){	
         saving = false;
+    }
+
+    // Delete the brushes to reset the image
+    void Reset()
+    {
+        brushCounter = 0;
+        foreach (Transform child in brushContainer.transform) {//Clear brushes
+            Destroy(child.gameObject);
+        }
     }
 }
